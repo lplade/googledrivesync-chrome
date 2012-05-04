@@ -1,0 +1,7 @@
+#summary One-sentence summary of this page.
+#labels Phase-Deploy
+
+= Install =
+
+Unzip, and copy all file in "C:\Program Files (x86)\Google\Drive" or "C:\Program Files\Google\Drive" directory.
+Double-click on googledrivesync_chrome.reg to replace googledrivesync.exe by googledrivesync_chrome.wsf for openning all google documents.

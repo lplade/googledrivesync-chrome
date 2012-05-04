@@ -1,7 +1,13 @@
 #summary One-sentence summary of this page.
 #labels Phase-Deploy
 
-= Install =
+= How to Install googledrivesync_chrome =
 
-Unzip, and copy all file in "C:\Program Files (x86)\Google\Drive" or "C:\Program Files\Google\Drive" directory.
-Double-click on googledrivesync_chrome.reg to replace googledrivesync.exe by googledrivesync_chrome.wsf for openning all google documents.
+  * Download last version;
+  * Unzip file downloaded;
+  * Copy all file in "C:\Program Files (x86)\Google\Drive" or "C:\Program Files\Google\Drive" directory;
+  * Double-click on googledrivesync_chrome.reg
+
+== googledrivesync_chrome.reg ==
+
+This file replace googledrivesync.exe by googledrivesync_chrome.wsf for openning all google documents with Google Chrome.

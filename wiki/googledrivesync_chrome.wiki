@@ -10,3 +10,4 @@ To using Google Documents in offline mode with Google Drive with an environement
 = Details =
 
   * How to [install] googledrivesync_chrome.
+  * Use json2.js library of Douglas Crockford from https://github.com/douglascrockford/JSON-js. Others details on JSON: http://www.json.org/js.html

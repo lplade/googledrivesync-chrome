@@ -61,6 +61,12 @@ if (typeof gdoc.url === 'undefined') {
 	nourl_and_exit(strFileName);
 }
 
-WshShell.Run('"%LOCALAPPDATA%\\Google\\Chrome\\Application\\chrome.exe" ' + gdoc.url, WshNormalFocus, false);
+var sLAP = (WshShell.ExpandEnvironmentStrings( "%LOCALAPPDATA%" ));
+var sUP = (WshShell.ExpandEnvironmentStrings( "%USERPROFILE%" ));
+// APPDATA=C:\Documents and Settings\%USER%\Application Data
+if (sLAP == '%LOCALAPPDATA%') {
+	sLAP = sUP + '\\Local Settings\\Application Data';
+}
+WshShell.Run('"' + sLAP + '\\Google\\Chrome\\Application\\chrome.exe" ' + gdoc.url, WshNormalFocus, false);
 </script>
 </job>

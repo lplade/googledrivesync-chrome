@@ -3,6 +3,8 @@
 
 = How to Install googledrivesync_chrome =
 
+After reboot registry was restored by Google Drive. (tested on Windows 7 64 bits with "C:\Program Files (x86)\Google\Drive\googledrivesync.exe" /autostart in HKCU\Software\Microsoft\Windows\CurrentVersion\Run\GoogleDriveSync)
+
 == On Windows 32 bits ==
 
   * Download last version;

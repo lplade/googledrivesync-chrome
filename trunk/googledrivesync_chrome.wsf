@@ -1,0 +1,66 @@
+<job>
+<object id="objFSO" progid="Scripting.FileSystemObject"/>
+<object id="WshShell" progid="Wscript.Shell"/>
+<reference object="Scripting.FileSystemObject" />
+<reference object="Wscript.Shell" />
+<script language="javascript" src=".\json2.js"/>
+<script language="javascript">
+function usage_and_exit() {
+	WScript.echo ('Usage: googledrivesync_chrome.wsf /file:json_google_file');
+	WScript.quit();
+}
+
+function nofile_and_exit(strFileName) {
+	WScript.echo ('Error: ' + strFileName + ' not found.');
+	WScript.quit();
+}
+
+function nourl_and_exit(strFileName) {
+var sCFStd = (WshShell.ExpandEnvironmentStrings( "%ProgramFiles%" ));
+var sCF64 = (WshShell.ExpandEnvironmentStrings( "%ProgramW6432%" ));
+var sCF32 = (WshShell.ExpandEnvironmentStrings( "%ProgramFiles(x86)%" ));
+var sGD = '\\Google\\Drive\\googledrivesync.exe';
+var sRun = '';
+	WScript.echo ('Error: ' + strFileName + ' haven\'t url.\nProbably an "Invalide Google document file".\nClic Ok to let Google Drive try it.');
+
+	if (objFSO.FileExists(sCFStd + sGD)) {
+		sRun = sCFStd + sGD;
+	} else if (objFSO.FileExists(sCF32 + sGD)) {
+		sRun = sCF32 + sGD;
+	} else if (objFSO.FileExists(sCF64 + sGD)) {
+		sRun = sCF64 + sGD;
+	} else {
+		WScript.echo ('Warning: googledrivesync.exe not found.');
+	}
+	if (sRun != '') {
+		WshShell.Run('"' + sRun + '" --file="' + gdoc.url + '"', WshNormalFocus, false);
+	}
+	WScript.quit();
+}
+
+var colNamedArguments = WScript.Arguments.Named;
+
+if (colNamedArguments.Exists('file')) {
+	strFileName = colNamedArguments.Item('file');
+	if (!objFSO.FileExists(strFileName)) {
+		nofile_and_exit(strFileName);
+	}
+} else {
+	usage_and_exit();
+}
+
+var hJSON = objFSO.OpenTextFile (strFileName, ForReading);
+var jsontext = hJSON.ReadLine();
+hJSON.close();
+
+var gdoc = JSON.parse(jsontext);
+
+// We don't need gdoc.resource_id.
+
+if (typeof gdoc.url === 'undefined') {
+	nourl_and_exit(strFileName);
+}
+
+WshShell.Run('"%LOCALAPPDATA%\\Google\\Chrome\\Application\\chrome.exe" ' + gdoc.url, WshNormalFocus, false);
+</script>
+</job>

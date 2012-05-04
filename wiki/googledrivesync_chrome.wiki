@@ -1,0 +1,8 @@
+#summary One-sentence summary of this page.
+#labels Featured,Phase-Requirements
+
+= What is googledrivesync_chrome ? =
+
+To using Google Documents in offline mode with Google Drive with an environement where is not possible to have Google Chrome as default browser, you can't use double-click in Windows Explorer on file .gdoc and others.
+
+"googledrivesync_chrome" is a Windows Script to open Chrome on a double-click of Google Doucments file in Google Drive directory.

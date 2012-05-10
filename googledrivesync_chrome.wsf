@@ -1,27 +1,124 @@
+<?xml version="1.0"?>
 <job>
-<object id="objFSO" progid="Scripting.FileSystemObject"/>
-<object id="WshShell" progid="Wscript.Shell"/>
-<reference object="Scripting.FileSystemObject" />
-<reference object="Wscript.Shell" />
-<script language="javascript" src=".\json2.js"/>
-<script language="javascript">
-function usage_and_exit() {
-	WScript.echo ('Usage: googledrivesync_chrome.wsf /file:json_google_file');
-	WScript.quit();
+	<runtime>
+		<description>Force to use Google Chrome on double-click on Google Documents in Google Drive.&#x0A;</description>
+		<named name="install" helpstring="Install this script" type="simple" required="false"/>
+		<named name="force" helpstring="Force to install this script" type="simple" required="false"/>
+		<named name="uninstall" helpstring="Uninstall this script" type="simple" required="false"/>
+		<named name="autostart" helpstring="Start Google Drive and preserve this script" type="simple" required="false"/>
+		<named name="file" helpstring="Google Documents links" type="string" required="false"/>
+		<example>&#x0A;Examples:
+	googledrivesync_chrome.wsf /file:mondoc.gdoc
+	googledrivesync_chrome.wsf /install
+	googledrivesync_chrome.wsf /install /force
+	googledrivesync_chrome.wsf /uninstall
+	googledrivesync_chrome.wsf /autostart</example>
+	</runtime>
+	<object id="objFSO" progid="Scripting.FileSystemObject"/>
+	<object id="WshShell" progid="Wscript.Shell"/>
+	<reference object="Scripting.FileSystemObject"/>
+	<reference object="Wscript.Shell"/>
+	<resource id="msg_gDriveNotInstalled">Google Drive not installed!</resource>
+	<resource id="msg_NotInstalled">Not installed!</resource>
+	<resource id="msg_RestoreSuccess">Restored!</resource>
+	<resource id="msg_InstallSuccess">Installed!</resource>
+	<resource id="msg_AlreadyInst">Already installed!</resource>
+	<resource id="msg_gChromeIsDefault">Chrome is the default web browser.&#x0A;You don't need this script.</resource>
+	<resource id="err_FileNotFound">Error: The file '%s' was not found.</resource>
+	<resource id="err_InvalideGoogleDoc">Error: %s haven't url.&#x0A;Probably an "Invalide Google document file".&#x0A;Clic Ok to let Google Drive try it.</resource>
+	<resource id="err_WatchDogAutoStart">Error: Watchdog on %s /autostart&#x0A;googledrivesync.exe /autostart haven't already reset registry.</resource>
+	<resource id="warn_gDriveNotFound">Warning: googledrivesync.exe not found.</resource>
+	<script language="javascript" src=".\json2.js"/>
+	<script language="javascript">
+		<![CDATA[
+var STRING_NOT_FOUND = -1;
+var KEY_GDRIVE_INSTALLED = "HKCU\\Software\\Google\\Drive\\Installed";
+var KEY_GDRIVE_WIN_AUTORUN = "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\GoogleDriveSync";
+var KEY_GDRIVE_OPEN_GDOC = "HKCR\\GoogleDrive.gdoc\\shell\\open\\command\\";
+var KEY_GDRIVE_OPEN_GTAB = "HKCR\\GoogleDrive.gtable\\shell\\open\\command\\";
+var KEY_GDRIVE_OPEN_GDRW = "HKCR\\GoogleDrive.gdraw\\shell\\open\\command\\";
+var KEY_GDRIVE_OPEN_GFRM = "HKCR\\GoogleDrive.gform\\shell\\open\\command\\";
+var KEY_GDRIVE_OPEN_GSHT = "HKCR\\GoogleDrive.gsheet\\shell\\open\\command\\";
+var KEY_GDRIVE_OPEN_GSLD = "HKCR\\GoogleDrive.gslides\\shell\\open\\command\\";
+var KEY_GCHROME_DEFAULT_HTTPS = "HKCR\\https\\shell\\open\\command\\";
+var TEST_GCHROME_DEFAULT_HTTPS = new RegExp("chrome.exe", "i");
+var TEST_GDRIVE_OPEN_GDOC = new RegExp("googledrivesync.exe");
+
+// ------------------------------ Main Script -------------------------------------------------------------
+var WshNamed = WScript.Arguments.Named;
+var bNoOtherAgr = false;
+var sCmd = '';
+var bOptionForce = false;
+
+// Test if one of single argument is present: /install, /uninstall or /autostart.
+if (WshNamed.Exists('install')) {
+	bNoOtherAgr = true;
+	sCmd = 'install';
+} else if (WshNamed.Exists('uninstall')) {
+	bNoOtherAgr = true;
+	sCmd = 'uninstall';
+} else if (WshNamed.Exists('autostart')) {
+	bNoOtherAgr = true;
+	sCmd = 'autostart';
 }
 
+if (WshNamed.Exists('force')) {
+	bOptionForce = true;
+}
+
+// If none of singles arguments is present:
+// Test if /file argument is present and test if the file name exist.
+if (!bNoOtherAgr && WshNamed.Exists('file')) {
+	strFileName = WshNamed.Item('file');
+	if (!objFSO.FileExists(strFileName)) {
+		nofile_and_exit(strFileName);
+	}
+	sCmd = 'opengdoc';
+}
+
+switch(sCmd) {
+	case 'install':
+		install(bOptionForce);
+		break;
+	case 'uninstall':
+		uninstall();
+		break;
+	case 'autostart':
+		doAutoStart();
+		break;
+	case 'opengdoc':
+		openGDocWithChrome(strFileName);
+		break;
+	default:
+	   WScript.Arguments.ShowUsage();
+}
+
+WScript.quit(); // End of main script.
+
+// ------------------------------ Functions ---------------------------------------------------------------
+
 function nofile_and_exit(strFileName) {
-	WScript.echo ('Error: ' + strFileName + ' not found.');
+	WScript.echo (getResource('err_FileNotFound').replace(/%s/,'strFileName'));
 	WScript.quit();
 }
 
 function nourl_and_exit(strFileName) {
-var sCFStd = (WshShell.ExpandEnvironmentStrings( "%ProgramFiles%" ));
-var sCF64 = (WshShell.ExpandEnvironmentStrings( "%ProgramW6432%" ));
-var sCF32 = (WshShell.ExpandEnvironmentStrings( "%ProgramFiles(x86)%" ));
-var sGD = '\\Google\\Drive\\googledrivesync.exe';
-var sRun = '';
-	WScript.echo ('Error: ' + strFileName + ' haven\'t url.\nProbably an "Invalide Google document file".\nClic Ok to let Google Drive try it.');
+	WScript.echo (getResource('err_InvalideGoogleDoc'));
+
+	sRun = getGoogleDriveExe();
+	
+	if (sRun != '') {
+		WshShell.Run('"' + sRun + '" --file="' + gdoc.url + '"', WshNormalFocus);
+	}
+	WScript.quit();
+}
+
+function getGoogleDriveExe() {
+	var sCFStd = (WshShell.ExpandEnvironmentStrings( "%ProgramFiles%" ));
+	var sCF64 = (WshShell.ExpandEnvironmentStrings( "%ProgramW6432%" ));
+	var sCF32 = (WshShell.ExpandEnvironmentStrings( "%ProgramFiles(x86)%" ));
+	var sGD = '\\Google\\Drive\\googledrivesync.exe';
+	var sRun = '';
 
 	if (objFSO.FileExists(sCFStd + sGD)) {
 		sRun = sCFStd + sGD;
@@ -30,43 +127,156 @@ var sRun = '';
 	} else if (objFSO.FileExists(sCF64 + sGD)) {
 		sRun = sCF64 + sGD;
 	} else {
-		WScript.echo ('Warning: googledrivesync.exe not found.');
+		WScript.echo (getResource('warn_gDriveNotFound'));
 	}
+
+	return sRun;
+}
+
+function getGoogleChromeExe() {
+	var sLOCALAPPDATA = '\\Local Settings\\Application Data';
+	var sSUFFIX_PATH_CHROME = '\\Google\\Chrome\\Application\\chrome.exe';
+	var sRun = '';
+
+	var sLAP = (WshShell.ExpandEnvironmentStrings( "%LOCALAPPDATA%" ));
+	var sUP = (WshShell.ExpandEnvironmentStrings( "%USERPROFILE%" ));
+	// APPDATA=C:\Documents and Settings\%USER%\Application Data
+	if (sLAP == '%LOCALAPPDATA%') {
+		sLAP = sUP + sLOCALAPPDATA;
+	}
+	sRun = sLAP + sSUFFIX_PATH_CHROME;
+	if (!objFSO.FileExists(sRun)) {
+		sRun = '';
+		WScript.echo (getResource('err_gChromeNotFound'));
+	}
+	
+	return sRun;
+}
+
+function scriptInstalled() {
+	var sRunKey = WshShell.RegRead (KEY_GDRIVE_WIN_AUTORUN);
+	var bRet;
+
+	if (sRunKey.indexOf('googledrivesync_chrome.wsf') == STRING_NOT_FOUND) {
+		bRet = false;
+	} else {
+		bRet = true;
+	}
+	return bRet;
+}
+
+function writeRegDoc(sOpenGDoc) {
+	WshShell.RegWrite (KEY_GDRIVE_OPEN_GDOC, sOpenGDoc, "REG_SZ");
+	WshShell.RegWrite (KEY_GDRIVE_OPEN_GTAB, sOpenGDoc, "REG_SZ");
+	WshShell.RegWrite (KEY_GDRIVE_OPEN_GDRW, sOpenGDoc, "REG_SZ");
+	WshShell.RegWrite (KEY_GDRIVE_OPEN_GFRM, sOpenGDoc, "REG_SZ");
+	WshShell.RegWrite (KEY_GDRIVE_OPEN_GSHT, sOpenGDoc, "REG_SZ");
+	WshShell.RegWrite (KEY_GDRIVE_OPEN_GSLD, sOpenGDoc, "REG_SZ");
+}
+
+function installRegDoc() {
+	writeRegDoc('wscript.exe "' + WScript.ScriptFullName + '" /file:"%1"');
+}
+
+function installRun() {
+	WshShell.RegWrite (KEY_GDRIVE_WIN_AUTORUN, 'wscript.exe "' + WScript.ScriptFullName + '" /autostart', "REG_SZ");
+}
+
+function restoreRegDoc(sRungDrive) {
+	writeRegDoc('"' + sRungDrive + '" --file="%1"');
+}
+
+function restoreRun(sRungDrive) {
+	WshShell.RegWrite (KEY_GDRIVE_WIN_AUTORUN, '"' + sRungDrive + '" /autostart', "REG_SZ");
+}
+
+function install(bOptionForce) {
+	var bInst = true;
+	var sgDriveInstalled = WshShell.RegRead (KEY_GDRIVE_INSTALLED);
+	if (!bOptionForce) {
+		var sDefaultHttps = WshShell.RegRead(KEY_GCHROME_DEFAULT_HTTPS);
+		if (TEST_GCHROME_DEFAULT_HTTPS.test(sDefaultHttps)) {
+			bInst = false;
+			WScript.echo (getResource('msg_gChromeIsDefault'));
+		}
+	}
+	if (bInst) {
+		if (sgDriveInstalled == 'True' && getGoogleChromeExe() != '') {
+			if (!scriptInstalled()) {
+				installRegDoc();
+				installRun();
+				WScript.echo (getResource('msg_InstallSuccess'));
+			} else {
+				WScript.echo (getResource('msg_AlreadyInst'));
+			}
+		} else {
+			WScript.echo (getResource('msg_gDriveNotInstalled'));
+		}
+	}
+}
+
+function uninstall() {
+	var sgDriveInstalled = WshShell.RegRead (KEY_GDRIVE_INSTALLED);
+	var sRungDrive = getGoogleDriveExe();
+	
+	if (scriptInstalled()) {
+		if (sgDriveInstalled == 'True') {
+			restoreRegDoc(sRungDrive);
+			restoreRun(sRungDrive);
+			WScript.echo (getResource('msg_RestoreSuccess'));
+		} else {
+			WScript.echo (getResource('msg_gDriveNotInstalled'));
+		}
+	} else {
+		WScript.echo (getResource('msg_NotInstalled'));
+	}
+}
+
+function openGDocWithChrome(strFileName) {
+	var hJSON = objFSO.OpenTextFile (strFileName, ForReading);
+	var jsontext = hJSON.ReadLine();
+	hJSON.close();
+
+	var gdoc = JSON.parse(jsontext);
+
+	// We don't need gdoc.resource_id.
+
+	if (typeof gdoc.url === 'undefined') {
+		nourl_and_exit(strFileName);
+	}
+
+	sRun = getGoogleChromeExe();
+	
 	if (sRun != '') {
-		WshShell.Run('"' + sRun + '" --file="' + gdoc.url + '"', WshNormalFocus, false);
+		WshShell.Run('"' + sRun + '" ' + gdoc.url, WshNormalFocus);
 	}
-	WScript.quit();
 }
 
-var colNamedArguments = WScript.Arguments.Named;
-
-if (colNamedArguments.Exists('file')) {
-	strFileName = colNamedArguments.Item('file');
-	if (!objFSO.FileExists(strFileName)) {
-		nofile_and_exit(strFileName);
+function doAutoStart() {
+	var sOpen_gdoc;
+	var wDog = 50;
+	sRun = getGoogleDriveExe();
+	if (sRun != '') {
+		sOpen_gdoc = WshShell.RegRead (KEY_GDRIVE_OPEN_GDOC);
+		if (sOpen_gdoc.indexOf('googledrivesync.exe') != STRING_NOT_FOUND) {
+			installRegDoc();
+		}
+		// execute googledrivesync.exe /autostart
+		WshShell.Run('"' + sRun + '" /autostart', WshNormalFocus);
+		do {
+			WScript.sleep(5000);
+			sOpen_gdoc = WshShell.RegRead (KEY_GDRIVE_OPEN_GDOC);
+			wDog--;
+			if (wDog == 0) {
+				WScript.echo (getResource('err_WatchDogAutoStart').replace(/%s/,'WScript.ScriptFullName'));
+				WScript.quit();
+			}
+		} while (sOpen_gdoc.indexOf('googledrivesync.exe') == STRING_NOT_FOUND);
+		WScript.sleep(5000);
+		installRegDoc();
 	}
-} else {
-	usage_and_exit();
 }
 
-var hJSON = objFSO.OpenTextFile (strFileName, ForReading);
-var jsontext = hJSON.ReadLine();
-hJSON.close();
-
-var gdoc = JSON.parse(jsontext);
-
-// We don't need gdoc.resource_id.
-
-if (typeof gdoc.url === 'undefined') {
-	nourl_and_exit(strFileName);
-}
-
-var sLAP = (WshShell.ExpandEnvironmentStrings( "%LOCALAPPDATA%" ));
-var sUP = (WshShell.ExpandEnvironmentStrings( "%USERPROFILE%" ));
-// APPDATA=C:\Documents and Settings\%USER%\Application Data
-if (sLAP == '%LOCALAPPDATA%') {
-	sLAP = sUP + '\\Local Settings\\Application Data';
-}
-WshShell.Run('"' + sLAP + '\\Google\\Chrome\\Application\\chrome.exe" ' + gdoc.url, WshNormalFocus, false);
-</script>
+]]>
+	</script>
 </job>

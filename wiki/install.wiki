@@ -15,4 +15,6 @@ Then run googledrivesync_chrome.wsf with /install argument to setup the script i
   * Go to the directory where files were copied: cd "C:\Program Files\Google\Drive"
   * Register the script with command: googledrivesync_chrome.wsf /install
 
-[ Home]
+----
+
+[http://code.google.com/p/googledrivesync-chrome/ Project Home]

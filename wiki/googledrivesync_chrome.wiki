@@ -1,19 +1,35 @@
-#summary One-sentence summary of this page.
+#summary What is googledrivesync_chrome
 #labels Featured,Phase-Requirements
 
-= What is googledrivesync_chrome ? =
+= What is googledrivesync_chrome? =
 
-To use Google Documents in offline mode with Google Drive and an environement where is not possible to have Google Chrome as default browser, you can't use double-click in Windows Explorer on file .gdoc and others.
+*googledrivesync_chrome* is a Windows Script to open Google Chrome on a double-click of Google Doucments file in Google Drive directory.
 
-"googledrivesync_chrome" is a Windows Script to open Chrome on a double-click of Google Doucments file in Google Drive directory.
+With Windows Explorer in directory of Google Drive, *googledrivesync-chrome* forces the use of Google Chrome on a double click of a Google Document.
+
+= Install googledrivesync_chrome =
+
+Consult the Wiki page [install How to install googledrivesync_chrome].
+
+= A few questions =
+
+== Why not setting Google Chrome as default browser? ==
+
+Many intranet application were designed for only one browser, to reduce the cost of testing, maintenance and to be compatible with enterprise settings.
+
+For this reason, some professional intranet environment requires the use of one specific browser and this is the default browser. *googledrivesync-chrome* helps you get around this.
+
+== Why use Google Chrome and not an other browser for Google Document? ==
+
+Google Drive and the Google Document files working good with many browsers.
+However, the offline documents are only available with Google Chrome. That is the role of *googledrivesync-chrome* to allow you to use Chrome when it is not setup by default.
 
 = Tests in progress... =
 
   * Windows 7 64 bits
-  * Windows XP 32 bits (next version will be ok)
+  * Windows XP 32 bits
   * Later: Windows Vista
 
-= Details =
+= Detail =
 
-  * How to [install] googledrivesync_chrome.
   * Use json2.js library of Douglas Crockford from https://github.com/douglascrockford/JSON-js. Others details on JSON: http://www.json.org/js.html

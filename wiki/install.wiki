@@ -14,3 +14,5 @@ Then run googledrivesync_chrome.wsf with /install argument to setup the script i
   * Open a Windows command line (cmd.exe);
   * Go to the directory where files were copied: cd "C:\Program Files\Google\Drive"
   * Register the script with command: googledrivesync_chrome.wsf /install
+
+[ Home]

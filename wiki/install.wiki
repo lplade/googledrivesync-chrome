@@ -1,24 +1,16 @@
-#summary One-sentence summary of this page.
+#summary How to Install googledrivesync_chrome.
 #labels Phase-Deploy
 
 = How to Install googledrivesync_chrome =
 
-After reboot registry was restored by Google Drive. (tested on Windows 7 64 bits with "C:\Program Files (x86)\Google\Drive\googledrivesync.exe" /autostart in HKCU\Software\Microsoft\Windows\!CurrentVersion\Run\!GoogleDriveSync)
+Unzip and copy all files of googledrivesync_chrome package where you want to install the script.
+Then run googledrivesync_chrome.wsf with /install argument to setup the script in Windows registry.
 
-== On Windows 32 bits ==
-
-  * Download last version;
-  * Unzip file downloaded;
-  * Copy all file in "C:\Program Files\Google\Drive";
-  * Double-click on googledrivesync_chrome_32.reg
-
-== On Windows 64 bits ==
+== Example ==
 
   * Download last version;
   * Unzip file downloaded;
-  * Copy all file in "C:\Program Files (x86)\Google\Drive";
-  * Double-click on googledrivesync_chrome_64.reg
-
-=== googledrivesync_chrome_XX.reg ===
-
-This file replace googledrivesync.exe by googledrivesync_chrome.wsf for openning all google documents with Google Chrome.
+  * Copy all files in "C:\Program Files\Google\Drive";
+  * Open a Windows command line (cmd.exe);
+  * Go to the directory where files were copied: cd "C:\Program Files\Google\Drive"
+  * Register the script with command: googledrivesync_chrome.wsf /install

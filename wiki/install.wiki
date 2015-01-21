@@ -9,7 +9,7 @@ Then run googledrivesync_chrome.wsf with /install argument to setup the script i
 == Download last version ==
 
 Last version fix Issue 1:
-If you have download _r22.zip, you just need the wsf file:
+If you have download googledrivesync-chrome_r22.zip, you just need the wsf file:
 [https://googledrivesync-chrome.googlecode.com/svn/trunk/googledrivesync_chrome.wsf Last version of googledrivesync_chrome.wsf]
 Otherwise you need this module:
 [https://googledrivesync-chrome.googlecode.com/svn/trunk/json2.js json2.js]

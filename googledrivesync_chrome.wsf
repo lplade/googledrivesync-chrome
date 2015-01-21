@@ -27,6 +27,7 @@
 	<resource id="err_FileNotFound">Error: The file '%s' was not found.</resource>
 	<resource id="err_InvalideGoogleDoc">Error: %s haven't url.&#x0A;Probably an "Invalide Google document file".&#x0A;Clic Ok to let Google Drive try it.</resource>
 	<resource id="err_WatchDogAutoStart">Error: Watchdog on %s /autostart&#x0A;googledrivesync.exe /autostart haven't already reset registry.</resource>
+	<resource id="err_gChromeNotFound">Error: Chrome not found.</resource>
 	<resource id="warn_gDriveNotFound">Warning: googledrivesync.exe not found.</resource>
 	<script language="javascript" src=".\json2.js"/>
 	<script language="javascript">

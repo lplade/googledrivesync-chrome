@@ -184,7 +184,7 @@ function install(bOptionForce) {
 	}
 	if (bInst) {
 		if (sgDriveInstalled === 'True' && getGoogleChromeExe() !== '') {
-			if (!scriptInstalled()) {
+			if (!scriptInstalled() || bOptionForce) {
 				installRegDoc();
 				installRun();
 				WScript.echo(getResource('msg_InstallSuccess'));

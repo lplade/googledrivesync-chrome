@@ -73,7 +73,9 @@ function getGoogleChromeExe() {
 		sSUFFIX_PATH_CHROME = '\\Google\\Chrome\\Application\\chrome.exe',
 		sRun = '',
 		sLAP = (WshShell.ExpandEnvironmentStrings("%LOCALAPPDATA%")),
-		sUP = (WshShell.ExpandEnvironmentStrings("%USERPROFILE%"));
+		sUP = (WshShell.ExpandEnvironmentStrings("%USERPROFILE%")),
+		sPF = (WshShell.ExpandEnvironmentStrings("%ProgramFiles%")),
+		sPF86 = (WshShell.ExpandEnvironmentStrings("%ProgramFiles(x86)%"));
 
 	// APPDATA=C:\Documents and Settings\%USER%\Application Data
 	if (sLAP === '%LOCALAPPDATA%') {
@@ -81,8 +83,16 @@ function getGoogleChromeExe() {
 	}
 	sRun = sLAP + sSUFFIX_PATH_CHROME;
 	if (!objFSO.FileExists(sRun)) {
-		sRun = '';
-		WScript.echo(getResource('err_gChromeNotFound'));
+		if (sPF86 === '%ProgramFiles(x86)%') {
+			sLAP = sPF;
+		} else {
+			sLAP = sPF86;
+		}
+		sRun = sLAP + sSUFFIX_PATH_CHROME;
+		if (!objFSO.FileExists(sRun)) {
+			sRun = '';
+			WScript.echo(getResource('err_gChromeNotFound'));
+		}
 	}
 
 	return sRun;
@@ -152,8 +162,19 @@ function restoreRun(sRungDrive) {
 function install(bOptionForce) {
 	'use strict';
 	var bInst = true,
-		sgDriveInstalled = WshShell.RegRead(KEY_GDRIVE_INSTALLED),
-		sDefaultHttps = WshShell.RegRead(KEY_GCHROME_DEFAULT_HTTPS);
+		sgDriveInstalled,
+		sDefaultHttps;
+
+	try {
+		sgDriveInstalled = WshShell.RegRead(KEY_GDRIVE_INSTALLED);
+	} catch(e) {
+		if (e.number == -2147024894) { // 0x80070002
+			sgDriveInstalled = '';
+		} else {
+			throw(e);
+		}
+	}
+	sDefaultHttps = WshShell.RegRead(KEY_GCHROME_DEFAULT_HTTPS);
 	if (!bOptionForce) {
 		if (TEST_GCHROME_DEFAULT_HTTPS.test(sDefaultHttps)) {
 			bInst = false;
